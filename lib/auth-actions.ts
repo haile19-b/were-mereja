@@ -6,6 +6,7 @@ import { redirect } from "next/navigation";
 
 
 export async function login(formData: FormData) {
+
   const supabase = await createClient();
 
   // type-casting here for convenience
@@ -18,11 +19,12 @@ export async function login(formData: FormData) {
   const { error } = await supabase.auth.signInWithPassword(data);
 
   if (error) {
+    console.log(error);
     redirect("/error");
   }
 
   revalidatePath("/", "layout");
-  redirect("/");
+  redirect("/dashboard");
 }
 
 export async function signup(formData: FormData) {
@@ -46,11 +48,12 @@ export async function signup(formData: FormData) {
   const { error } = await supabase.auth.signUp(data);
 
   if (error) {
+    console.log(error);
     redirect("/error");
   }
 
   revalidatePath("/", "layout");
-  redirect("/");
+  redirect("/dashboard");
 }
 
 export async function signout() {
@@ -61,7 +64,7 @@ export async function signout() {
     redirect("/error");
   }
 
-  redirect("/logout");
+  redirect("/");
 }
 
 export async function signInWithGoogle() {
@@ -69,6 +72,7 @@ export async function signInWithGoogle() {
   const { data, error } = await supabase.auth.signInWithOAuth({
     provider: "google",
     options: {
+      redirectTo: "http://localhost:3000/auth/callback", // after success fully login , redirects to this page 
       queryParams: {
         access_type: "offline",
         prompt: "consent",

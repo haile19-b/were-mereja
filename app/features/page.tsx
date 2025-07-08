@@ -36,7 +36,7 @@ export default function FeaturePage() {
   ]
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-purple-50 to-pink-50 px-4 py-12 sm:px-6 lg:px-20">
+    <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-purple-50 to-pink-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 px-4 py-12 sm:px-6 lg:px-20">
       <motion.div 
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -44,15 +44,15 @@ export default function FeaturePage() {
         className="max-w-4xl mx-auto space-y-8"
       >
         <div className="text-center space-y-4">
-          <h1 className="text-3xl sm:text-4xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
+          <h1 className="text-3xl sm:text-4xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 dark:from-purple-400 dark:to-pink-400 bg-clip-text text-transparent">
             Features of Were-Mereja
           </h1>
-          <p className="text-gray-600 sm:text-lg max-w-2xl mx-auto">
+          <p className="text-gray-600 dark:text-gray-300 sm:text-lg max-w-2xl mx-auto">
             Discover what you can do once you're logged in and connected.
           </p>
         </div>
 
-        <Separator className="bg-gray-200" />
+        <Separator className="bg-gray-200 dark:bg-gray-700" />
 
         <div className="grid gap-6 sm:grid-cols-2">
           {features.map((feature, index) => (
@@ -63,7 +63,7 @@ export default function FeaturePage() {
               transition={{ duration: 0.5, delay: index * 0.1 }}
               whileHover={{ y: -5 }}
             >
-              <Card className="h-full bg-white/90 backdrop-blur-sm shadow-lg border-0 rounded-xl overflow-hidden transition-all hover:shadow-xl">
+              <Card className="h-full bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm shadow-lg dark:shadow-gray-950/50 border-0 dark:border-gray-700/30 rounded-xl overflow-hidden transition-all hover:shadow-xl dark:hover:shadow-gray-950/70">
                 <CardContent className="p-6 flex gap-5 items-start">
                   <div className={`p-3 rounded-lg bg-gradient-to-r ${feature.color}`}>
                     <div className="text-white">
@@ -71,8 +71,8 @@ export default function FeaturePage() {
                     </div>
                   </div>
                   <div className="space-y-2">
-                    <h2 className="text-lg font-semibold text-gray-800">{feature.title}</h2>
-                    <p className="text-gray-600 text-sm sm:text-base">{feature.description}</p>
+                    <h2 className="text-lg font-semibold text-gray-800 dark:text-gray-100">{feature.title}</h2>
+                    <p className="text-gray-600 dark:text-gray-400 text-sm sm:text-base">{feature.description}</p>
                   </div>
                 </CardContent>
               </Card>
@@ -89,7 +89,7 @@ export default function FeaturePage() {
           <Link href="/">
             <Button 
               size="lg" 
-              className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 shadow-lg hover:shadow-purple-200 transition-all px-8"
+              className="bg-gradient-to-r from-purple-600 to-pink-600 dark:from-purple-500 dark:to-pink-500 hover:from-purple-700 hover:to-pink-700 dark:hover:from-purple-600 dark:hover:to-pink-600 shadow-lg hover:shadow-purple-200 dark:hover:shadow-purple-900/30 transition-all px-8"
             >
               Get Started <FaArrowRight className="ml-2" />
             </Button>

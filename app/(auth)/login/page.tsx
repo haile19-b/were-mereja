@@ -24,12 +24,12 @@ const SignInWithGoogleButton = () => {
       <Button
         type="button"
         variant="outline"
-        className="w-full border-gray-300 hover:bg-gray-50 transition-colors"
+        className="w-full border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
         onClick={() => signInWithGoogle()}
       >
         <div className="flex items-center justify-center gap-3">
           <FcGoogle className="w-5 h-5" />
-          <span>Continue with Google</span>
+          <span className="dark:text-gray-200">Continue with Google</span>
         </div>
       </Button>
     </motion.div>
@@ -47,20 +47,20 @@ export function LoginForm({
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
       >
-        <Card className="bg-white/90 backdrop-blur-sm shadow-xl border-0 rounded-xl overflow-hidden">
+        <Card className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm shadow-xl dark:shadow-gray-950/50 border-0 dark:border-gray-700/30 rounded-xl overflow-hidden">
           <CardHeader className="text-center space-y-2 pb-4">
             <motion.div 
               initial={{ scale: 0.9 }}
               animate={{ scale: 1 }}
               transition={{ duration: 0.5 }}
-              className="mx-auto w-16 h-16 rounded-full bg-gradient-to-r from-purple-100 to-pink-100 flex items-center justify-center mb-4"
+              className="mx-auto w-16 h-16 rounded-full bg-gradient-to-r from-purple-100 to-pink-100 dark:from-purple-900/50 dark:to-pink-900/50 flex items-center justify-center mb-4"
             >
               <span className="text-2xl">🔐</span>
             </motion.div>
-            <CardTitle className="text-2xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
+            <CardTitle className="text-2xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 dark:from-purple-400 dark:to-pink-400 bg-clip-text text-transparent">
               Welcome Back
             </CardTitle>
-            <CardDescription className="text-gray-600">
+            <CardDescription className="text-gray-600 dark:text-gray-400">
               Enter your credentials to access your account
             </CardDescription>
           </CardHeader>
@@ -70,24 +70,24 @@ export function LoginForm({
               <div className="flex flex-col gap-6">
                 {/* Email Field */}
                 <div className="grid gap-2">
-                  <Label htmlFor="email" className="text-gray-700">Email</Label>
+                  <Label htmlFor="email" className="text-gray-700 dark:text-gray-300">Email</Label>
                   <Input
                     id="email"
                     name="email"
                     type="email"
                     placeholder="your@email.com"
                     required
-                    className="border-gray-300 focus:border-purple-500 focus:ring-purple-500 rounded-lg"
+                    className="border-gray-300 dark:border-gray-600 focus:border-purple-500 dark:focus:border-purple-400 focus:ring-purple-500 dark:focus:ring-purple-400 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
                   />
                 </div>
 
                 {/* Password Field */}
                 <div className="grid gap-2">
                   <div className="flex items-center">
-                    <Label htmlFor="password" className="text-gray-700">Password</Label>
+                    <Label htmlFor="password" className="text-gray-700 dark:text-gray-300">Password</Label>
                     <Link
                       href="#"
-                      className="ml-auto inline-block text-sm text-purple-600 hover:text-purple-700 underline-offset-4 hover:underline transition-colors"
+                      className="ml-auto inline-block text-sm text-purple-600 dark:text-purple-400 hover:text-purple-700 dark:hover:text-purple-300 underline-offset-4 hover:underline transition-colors"
                     >
                       Forgot password?
                     </Link>
@@ -97,7 +97,7 @@ export function LoginForm({
                     name="password" 
                     type="password" 
                     required 
-                    className="border-gray-300 focus:border-purple-500 focus:ring-purple-500 rounded-lg"
+                    className="border-gray-300 dark:border-gray-600 focus:border-purple-500 dark:focus:border-purple-400 focus:ring-purple-500 dark:focus:ring-purple-400 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
                   />
                 </div>
 
@@ -107,7 +107,7 @@ export function LoginForm({
                     <Button 
                       type="submit" 
                       formAction={login} 
-                      className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 shadow-lg hover:shadow-purple-200 transition-all"
+                      className="w-full bg-gradient-to-r from-purple-600 to-pink-600 dark:from-purple-500 dark:to-pink-500 hover:from-purple-700 hover:to-pink-700 dark:hover:from-purple-600 dark:hover:to-pink-600 shadow-lg hover:shadow-purple-200 dark:hover:shadow-purple-900/30 transition-all"
                     >
                       Sign In <FaArrowRight className="ml-2" />
                     </Button>
@@ -117,11 +117,11 @@ export function LoginForm({
               </div>
 
               {/* Sign-up link */}
-              <div className="mt-6 text-center text-sm text-gray-600">
+              <div className="mt-6 text-center text-sm text-gray-600 dark:text-gray-400">
                 Don't have an account?{" "}
                 <Link 
                   href="/signin" 
-                  className="font-medium text-purple-600 hover:text-purple-700 underline-offset-4 hover:underline transition-colors"
+                  className="font-medium text-purple-600 dark:text-purple-400 hover:text-purple-700 dark:hover:text-purple-300 underline-offset-4 hover:underline transition-colors"
                 >
                   Sign up
                 </Link>
@@ -136,7 +136,7 @@ export function LoginForm({
 
 export default function LoginPage() {
   return (
-    <div className="flex min-h-screen w-full items-center justify-center p-4 sm:p-6 md:p-10 bg-gradient-to-br from-indigo-50 via-purple-50 to-pink-50">
+    <div className="flex min-h-screen w-full items-center justify-center p-4 sm:p-6 md:p-10 bg-gradient-to-br from-indigo-50 via-purple-50 to-pink-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
       <div className="w-full max-w-md">
         <LoginForm />
       </div>
