@@ -6,7 +6,8 @@ const nextConfig: NextConfig = {
     domains: [
       'lh3.googleusercontent.com', // Google user content
       'avatars.githubusercontent.com', // GitHub avatars (if you use those)
-      'your-other-domains.com' // Any other domains you need
+      'your-other-domains.com', // Any other domains you need
+      'images.unsplash.com',
     ],
   },
 };
