@@ -15,7 +15,7 @@ export default async function Page() {
 
   return (
     <div>
-      Hello {user?.user_metadata?.full_name ?? "user"}, this is the dashboard page.
+      Hello {user?.user_metadata?.full_name ?? "user"}, this is home page.
     </div>
   );
 }

@@ -6,30 +6,30 @@ import Image from 'next/image'
 import Link from 'next/link'
 import { Button } from './ui/button'
 import { createClient } from '@/utils/supabase/client'
-import { useRouter } from 'next/navigation'
-import { ChevronDown, User, Settings, LogOut } from 'lucide-react'
+import { useRouter, usePathname } from 'next/navigation'
+import { ChevronDown, User, Settings, LogOut, Home, Users, MessageSquare, Bell } from 'lucide-react'
 import { signout } from '@/lib/auth-actions'
 import ThemeToggle from '@/app/theme-toggle'
-import { useUserStore } from '@/lib/store/zustand'
+import { Sheet, SheetContent, SheetTrigger,SheetTitle } from './ui/sheet'
+import { Menu } from 'lucide-react'
 
 function NavBar() {
   const [user, setUser] = useState<any>(null)
   const [dropdownOpen, setDropdownOpen] = useState(false)
   const router = useRouter()
+  const pathname = usePathname()
   const supabase = createClient()
 
-
-
-    const getUser = async () => {
-      const { data } = await supabase.auth.getUser()
-      setUser(data.user)
+  const getUser = async () => {
+    const { data } = await supabase.auth.getUser()
+    setUser(data.user)
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       setUser(session?.user || null)
     })
   }
 
-   getUser();
+  getUser();
 
   const handleLogout = async () => {
     await signout()
@@ -38,15 +38,60 @@ function NavBar() {
     setDropdownOpen(false)
   }
 
+  const navItems = [
+    { name: 'Home', path: '/dashboard', icon: <Home className="w-5 h-5" /> },
+    { name: 'My Network', path: '/dashboard/network', icon: <Users className="w-5 h-5" /> },
+    { name: 'Messaging', path: '/dashboard/messaging', icon: <MessageSquare className="w-5 h-5" /> },
+    { name: 'Notifications', path: '/dashboard/notifications', icon: <Bell className="w-5 h-5" /> },
+  ]
+
   return (
     <header className="flex justify-between items-center px-4 sm:px-6 py-3 shadow-sm bg-white/90 dark:bg-gray-900/90 backdrop-blur-lg sticky top-0 z-50 border-b border-gray-100 dark:border-gray-800">
-      <motion.div
-        initial={{ opacity: 0, x: -20 }}
-        animate={{ opacity: 1, x: 0 }}
-        transition={{ duration: 0.5 }}
-        className="flex items-center space-x-2"
-      >
-        <ThemeToggle/>
+      {/* Left side - Logo and Mobile Menu */}
+      <div className="flex items-center space-x-4">
+        {/* Mobile Menu Button */}
+        {user && (
+  <Sheet>
+    <SheetTrigger asChild className="md:hidden">
+      <Button variant="ghost" size="icon">
+        <Menu className="h-5 w-5" />
+      </Button>
+    </SheetTrigger>
+    <SheetContent side="left" className="w-[250px]">
+      <SheetTitle className="sr-only">Navigation Menu</SheetTitle>
+      <div className="flex flex-col h-full pt-6">
+        <div className="flex items-center space-x-2 mb-8 px-2">
+          <div className="w-8 h-8 rounded-full bg-gradient-to-r from-purple-500 to-pink-500 flex items-center justify-center overflow-hidden">
+            <Image 
+              src="/logo.png" 
+              alt="logo" 
+              width={32} 
+              height={32} 
+              className="p-1"
+            />
+          </div>
+          <span className="text-lg font-bold bg-gradient-to-r from-purple-600 to-pink-600 dark:from-purple-400 dark:to-pink-400 bg-clip-text text-transparent">
+            Were-Mereja
+          </span>
+        </div>
+        <nav className="flex-1 space-y-2">
+          {navItems.map((item) => (
+            <Link
+              key={item.path}
+              href={item.path}
+              className={`flex items-center px-3 py-2 rounded-lg transition-colors ${pathname === item.path ? 'bg-purple-50 dark:bg-purple-900/50 text-purple-600 dark:text-purple-400' : 'hover:bg-gray-100 dark:hover:bg-gray-800'}`}
+            >
+              <span className="mr-3">{item.icon}</span>
+              {item.name}
+            </Link>
+          ))}
+        </nav>
+      </div>
+    </SheetContent>
+  </Sheet>
+)}
+
+        {/* Logo */}
         <Link href="/" className="flex items-center gap-2 group">
           <div className="w-9 h-9 rounded-full bg-gradient-to-r from-purple-500 to-pink-500 flex items-center justify-center overflow-hidden group-hover:rotate-6 transition-transform">
             <Image 
@@ -57,18 +102,32 @@ function NavBar() {
               className="p-1.5"
             />
           </div>
-          <h1 className="text-xl sm:text-2xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 dark:from-purple-400 dark:to-pink-400 bg-clip-text text-transparent">
+          <h1 className="hidden sm:block text-xl sm:text-2xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 dark:from-purple-400 dark:to-pink-400 bg-clip-text text-transparent">
             Were-Mereja
           </h1>
         </Link>
-      </motion.div>
+      </div>
 
-      <motion.div
-        initial={{ opacity: 0, x: 20 }}
-        animate={{ opacity: 1, x: 0 }}
-        transition={{ duration: 0.5 }}
-        className="relative"
-      >
+      {/* Center - Navigation Items (Desktop) */}
+      {user && (
+        <nav className="hidden md:flex items-center space-x-1">
+          {navItems.map((item) => (
+            <Link
+              key={item.path}
+              href={item.path}
+              className={`flex flex-col items-center px-4 py-2 rounded-lg transition-colors ${pathname === item.path ? 'text-purple-600 dark:text-purple-400' : 'text-gray-600 dark:text-gray-400 hover:text-purple-600 dark:hover:text-purple-400'}`}
+            >
+              <span className="mb-1">{item.icon}</span>
+              <span className="text-xs">{item.name}</span>
+            </Link>
+          ))}
+        </nav>
+      )}
+
+      {/* Right side - Auth/User */}
+      <div className="flex items-center space-x-4">
+        <ThemeToggle />
+        
         {!user ? (
           <div className="flex space-x-2 sm:space-x-3">
             <Link href="/signin">
@@ -154,7 +213,7 @@ function NavBar() {
             </AnimatePresence>
           </div>
         )}
-      </motion.div>
+      </div>
     </header>
   )
 }

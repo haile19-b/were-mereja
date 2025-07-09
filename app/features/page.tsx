@@ -86,7 +86,7 @@ export default function FeaturePage() {
           animate={{ opacity: 1 }}
           transition={{ delay: 0.4 }}
         >
-          <Link href="/">
+          <Link href="/dashboard">
             <Button 
               size="lg" 
               className="bg-gradient-to-r from-purple-600 to-pink-600 dark:from-purple-500 dark:to-pink-500 hover:from-purple-700 hover:to-pink-700 dark:hover:from-purple-600 dark:hover:to-pink-600 shadow-lg hover:shadow-purple-200 dark:hover:shadow-purple-900/30 transition-all px-8"
