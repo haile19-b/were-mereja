@@ -3,6 +3,9 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { ThemeProvider } from "next-themes";
 import NavBar from "@/components/NavBar";
+import { useEffect } from "react";
+import { createClient } from "@/utils/supabase/server";
+import { useUserStore } from "@/lib/store/zustand";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",

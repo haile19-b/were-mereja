@@ -2,13 +2,13 @@
 
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
-import { Sheet, SheetTrigger, SheetContent } from "@/components/ui/sheet"
-import { FaRocket, FaUserAlt, FaGithub, FaLinkedin, FaTwitter } from "react-icons/fa"
+import { FaRocket } from "react-icons/fa"
 import Link from "next/link"
 import { motion } from "framer-motion"
 import Image from "next/image"
 
 export default function Home() {
+  
   return (
     <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-purple-50 to-pink-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 flex flex-col">
       {/* Hero Section */}
@@ -27,15 +27,13 @@ export default function Home() {
                 transition={{ duration: 0.5 }}
                 className="inline-flex items-center justify-center w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-gradient-to-r from-purple-100 to-pink-100 dark:from-purple-900/50 dark:to-pink-900/50 mb-4"
               >
-                <span className="text-3xl sm:text-4xl">
-                  <Image 
-                    src='/logo.png' 
-                    alt="logo" 
-                    width={400} 
-                    height={400} 
-                    className="rounded-2xl"
-                  />
-                </span>
+                <Image 
+                  src='/logo.png' 
+                  alt="logo" 
+                  width={400} 
+                  height={400} 
+                  className="rounded-2xl"
+                />
               </motion.div>
               
               <h2 className="text-3xl sm:text-4xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 dark:from-purple-400 dark:to-pink-400 bg-clip-text text-transparent">

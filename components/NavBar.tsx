@@ -20,16 +20,28 @@ function NavBar() {
   const pathname = usePathname()
   const supabase = createClient()
 
-  const getUser = async () => {
-    const { data } = await supabase.auth.getUser()
-    setUser(data.user)
-
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+  useEffect(() => {
+    const getUser = async () => {
+      const { data: { user } } = await supabase.auth.getUser()
+      setUser(user)
+    }
+  
+    getUser()
+  
+    // Listen for auth changes (login/logout)
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, session) => {
       setUser(session?.user || null)
     })
-  }
-
-  getUser();
+  
+    // Cleanup listener on unmount
+    return () => {
+      subscription.unsubscribe()
+    }
+  }, [])
+  
+  
 
   const handleLogout = async () => {
     await signout()

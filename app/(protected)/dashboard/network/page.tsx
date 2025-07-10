@@ -7,10 +7,12 @@ import { Input } from '@/components/ui/input' // Add this import
 import FriendRequests from '@/components/networks/FriendRequests'
 import FriendSuggestions from '@/components/networks/FriendSuggestions'
 import MyFriends from '@/components/networks/FriendsList'
+import { useUserStore } from '@/lib/store/zustand'
 
 export default function NetworksPage() {
   const [activeTab, setActiveTab] = useState<'requests' | 'suggestions' | 'friends'>('suggestions')
   const [searchQuery, setSearchQuery] = useState('') // Add search state
+
 
   return (
     <div className="max-w-4xl mx-auto p-4">

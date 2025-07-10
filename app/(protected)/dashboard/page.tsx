@@ -174,6 +174,7 @@ export default function PostPage() {
   const [newPostText, setNewPostText] = useState('')
   const [open, setOpen] = useState(false)
 
+
   const handleLike = (id: number) => {
     setPosts(posts.map(post =>
       post.id === id
