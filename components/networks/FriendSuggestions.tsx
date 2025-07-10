@@ -3,8 +3,9 @@
 import { Button } from '@/components/ui/button'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { UserPlus } from 'lucide-react'
+import { useContext, useEffect } from 'react'
 import { useUserStore } from '@/lib/store/zustand'
-import { useEffect } from 'react'
+import { UserContext } from '@/app/context/UserProvider'
 
 // const suggestions = [
 //   { id: 1, name: 'Jane Doe', avatar: '', title: 'Frontend Developer' },
@@ -15,9 +16,13 @@ import { useEffect } from 'react'
 
 export default function FriendSuggestions({ searchQuery }: { searchQuery: string }) {
 
-  const {allUsers} = useUserStore();
+  // const {allUsers} = useUserStore();
 
-const suggestions = allUsers;
+  const { all_users, profile } = useContext(UserContext)!
+
+const suggestions = all_users;
+
+console.log(all_users)
 
 useEffect(()=>{
   console.log(suggestions)
