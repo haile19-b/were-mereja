@@ -35,8 +35,9 @@ interface UserStore {
 
 export const useUserStore = create<UserStore>((set) => ({
   allUsers: [],
-  myFriends: [],
   setAllUsers: (users: User[]) => set({ allUsers: users }),
+  myFriends: [],
+  setMyFriends:(friends:User[])=>set({myFriends:friends}),
 
   fetchUsers: async () => {
     try {
