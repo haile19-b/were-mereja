@@ -12,6 +12,7 @@ import { signout } from '@/lib/auth-actions'
 import ThemeToggle from '@/app/theme-toggle'
 import { Sheet, SheetContent, SheetTrigger,SheetTitle } from './ui/sheet'
 import { Menu } from 'lucide-react'
+import { useStarter } from '@/lib/api/starter'
 
 function NavBar() {
   const [user, setUser] = useState<any>(null)
@@ -19,6 +20,8 @@ function NavBar() {
   const router = useRouter()
   const pathname = usePathname()
   const supabase = createClient()
+  
+  const {} = useStarter();
 
   useEffect(() => {
     const getUser = async () => {

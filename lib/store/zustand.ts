@@ -8,6 +8,7 @@ export interface User {
   id: string;
   full_name: string;
   avatar_url: string;
+  email:string;
   username: string;
   headline: string;
   bio: string;
@@ -27,13 +28,27 @@ export const useErrorStore = create<ErrorStore>((set) => ({
 
 // User store
 interface UserStore {
+  user:User;
+  setUser:(user:User) => void;
   allUsers: User[];
-  myFriends: User[];
   setAllUsers: (users: User[]) => void;
+  myFriends: User[];
+  setMyFriends:(friends:User[]) => void;
   fetchUsers: () => Promise<void>;
 }
 
 export const useUserStore = create<UserStore>((set) => ({
+  user:{
+    id: '',
+    full_name: '',
+    avatar_url: '',
+    username: '',
+    email:'',
+    headline: '',
+    bio: '',
+    created_at: ''
+  },
+  setUser:(current:User) => set({user:current}),
   allUsers: [],
   setAllUsers: (users: User[]) => set({ allUsers: users }),
   myFriends: [],

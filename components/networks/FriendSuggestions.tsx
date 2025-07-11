@@ -201,7 +201,6 @@ export default function FriendSuggestions({ searchQuery }: { searchQuery: string
       ) : (
         filteredSuggestions.map(user => {
           const buttonState = getButtonState(user.id)
-          console.log(user)
           
           return (
             <div
