@@ -5,9 +5,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { MessageCircle } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
-import { createClient } from '@/utils/supabase/client'
-import { toast } from 'sonner'
-import { fetchFriends } from '@/lib/api/user/functions'
+import { User, useUserStore } from '@/lib/store/zustand'
 
 interface Friend {
   id: string
@@ -17,32 +15,21 @@ interface Friend {
 }
 
 export default function MyFriends({ searchQuery }: { searchQuery: string }) {
-  const [friends, setFriends] = useState<Friend[]>([])
+  const [friends, setFriends] = useState<User[]>([])
   const [isLoading, setIsLoading] = useState(true)
-  const supabase = createClient()
+  const {myFriends} = useUserStore();
 
   useEffect(() => {
     const loadFriends = async () => {
-      try {
-        setIsLoading(true)
-        const { data: { user }, error } = await supabase.auth.getUser()
-        if (error || !user) throw error || new Error('User not authenticated')
-
-        const friendsData = await fetchFriends(user.id)
-        setFriends(friendsData)
-      } catch (error) {
-        console.error('Error loading friends:', error)
-        toast.error('Failed to load friends list')
-      } finally {
-        setIsLoading(false)
-      }
+      setFriends(myFriends)
+      setIsLoading(false)
     }
 
     loadFriends()
   }, [])
 
   const filteredFriends = friends.filter(friend => 
-    friend.name.toLowerCase().includes(searchQuery.toLowerCase())
+    friend.full_name.toLowerCase().includes(searchQuery.toLowerCase())
   )
 
   if (isLoading) {
@@ -103,13 +90,13 @@ export default function MyFriends({ searchQuery }: { searchQuery: string }) {
               <Avatar className="h-12 w-12 border-2 border-white dark:border-gray-700 shadow-sm">
                 <AvatarImage src={friend.avatar_url || `https://i.pravatar.cc/150?img=${friend.id}`} />
                 <AvatarFallback className="bg-gradient-to-r from-indigo-500 to-purple-500 text-white">
-                  {friend.name.charAt(0)}
+                  {friend.full_name.charAt(0)}
                 </AvatarFallback>
               </Avatar>
               <div>
-                <p className="font-medium text-gray-800 dark:text-gray-100">{friend.name}</p>
+                <p className="font-medium text-gray-800 dark:text-gray-100">{friend.full_name.split(" ")[0]}</p>
                 <p className="text-sm text-gray-500 dark:text-gray-400 line-clamp-1">
-                  {friend.title}
+                  {friend.headline}
                 </p>
               </div>
             </div>

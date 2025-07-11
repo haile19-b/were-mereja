@@ -26,6 +26,14 @@ export const useErrorStore = create<ErrorStore>((set) => ({
   setError: (newError) => set({ error: newError }),
 }));
 
+interface Request {
+  id:string;
+  sender_id:string;
+  receiver_id:string;
+  status:"accepted" | "pending" | "declined";
+  created_at:string;
+}
+
 // User store
 interface UserStore {
   user:User;
@@ -35,6 +43,8 @@ interface UserStore {
   myFriends: User[];
   setMyFriends:(friends:User[]) => void;
   fetchUsers: () => Promise<void>;
+  requestSenders:User[];
+  setRequestSenders:(requests:User[])=>void;
 }
 
 export const useUserStore = create<UserStore>((set) => ({
@@ -53,6 +63,8 @@ export const useUserStore = create<UserStore>((set) => ({
   setAllUsers: (users: User[]) => set({ allUsers: users }),
   myFriends: [],
   setMyFriends:(friends:User[])=>set({myFriends:friends}),
+  requestSenders:[],
+  setRequestSenders:(requests:User[])=>set({requestSenders:requests}),
 
   fetchUsers: async () => {
     try {

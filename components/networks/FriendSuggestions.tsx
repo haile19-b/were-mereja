@@ -1,12 +1,10 @@
 'use client'
 
+import { useEffect, useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { UserPlus, Clock, Check, X } from 'lucide-react'
-import { useEffect, useState } from 'react'
-import { useUserStore } from '@/lib/store/zustand'
-import { createClient } from '@/utils/supabase/client'
-import { User } from '@supabase/supabase-js'
+import { User, useUserStore } from '@/lib/store/zustand'
 import { sendFriendRequest } from '@/lib/api/user/functions'
 import { Skeleton } from '@/components/ui/skeleton'
 import { toast } from 'sonner'
@@ -14,73 +12,44 @@ import { toast } from 'sonner'
 type RequestStatus = 'pending' | 'accepted' | 'declined' | 'none'
 
 export default function FriendSuggestions({ searchQuery }: { searchQuery: string }) {
-  const { allUsers, fetchUsers } = useUserStore()
-  const [currentUser, setCurrentUser] = useState<User | null>(null)
+  const { user,myFriends,allUsers } = useUserStore()
+  const [currentUserId, setCurrentUserId] = useState<string | null>(null)
   const [requestStatuses, setRequestStatuses] = useState<Record<string, RequestStatus>>({})
   const [loadingStates, setLoadingStates] = useState<Record<string, boolean>>({})
   const [isInitialLoading, setIsInitialLoading] = useState(true)
-  const [friendsList, setFriendsList] = useState<string[]>([])
-  const supabase = createClient()
+  const [filteredSuggestions, setFilteredSuggestions] = useState<User[]>([])
 
-  // Fetch all data in one go to prevent flickering
+  // ✅ Fetch current user and filter suggestions
   useEffect(() => {
-    const fetchAllData = async () => {
-      setIsInitialLoading(true)
-      try {
-        // Get current user first
-        const { data: { user }, error } = await supabase.auth.getUser()
-        if (error) throw error
-        
-        setCurrentUser(user || null)
-        
-        // Only proceed if we have a user
-        if (user) {
-          // Fetch users, requests, and friends in parallel
-          const [usersPromise, requestsPromise, friendsPromise] = await Promise.all([
-            fetchUsers(),
-            supabase
-              .from('friend_requests')
-              .select('receiver_id, status')
-              .eq('sender_id', user.id),
-            supabase
-              .from('friends')
-              .select('friend_id')
-              .eq('user_id', user.id)
-          ])
-          
-          // Handle requests data
-          if (requestsPromise.error) throw requestsPromise.error
-          
-          const statusMap: Record<string, RequestStatus> = {}
-          requestsPromise.data?.forEach(request => {
-            statusMap[request.receiver_id] = request.status as RequestStatus
-          })
-          
-          setRequestStatuses(statusMap)
-
-          // Handle friends data
-          if (friendsPromise.error) throw friendsPromise.error
-          const friendsIds = friendsPromise.data?.map(f => f.friend_id) || []
-          setFriendsList(friendsIds)
-        }
-      } catch (error) {
-        console.error('Error fetching data:', error)
-        toast.error('Failed to load suggestions')
-      } finally {
-        setIsInitialLoading(false)
+    const fetchData = async () => {
+  
+      if (user) {
+        setCurrentUserId(user.id)
+  
+        // Create a Set of friend IDs for quick lookup
+        const friendIds = new Set(myFriends.map(friend => friend.id))
+  
+        const suggestions = allUsers.filter(u =>
+          u.id !== user.id && !friendIds.has(u.id)
+        )
+  
+        setFilteredSuggestions(suggestions)
       }
+  
+      setIsInitialLoading(false)
     }
-
-    fetchAllData()
-  }, [])
+  
+    fetchData()
+  }, [allUsers, myFriends,user])
+  
 
   const handleSendRequest = async (receiverId: string) => {
-    if (!currentUser || requestStatuses[receiverId] === 'pending') return
+    if (!currentUserId || requestStatuses[receiverId] === 'pending') return
 
     setLoadingStates(prev => ({ ...prev, [receiverId]: true }))
-    
+
     try {
-      const response = await sendFriendRequest(receiverId, currentUser.id)
+      const response = await sendFriendRequest(receiverId, currentUserId)
       if (response?.success) {
         setRequestStatuses(prev => ({
           ...prev,
@@ -98,19 +67,8 @@ export default function FriendSuggestions({ searchQuery }: { searchQuery: string
     }
   }
 
-  // Filter out current user, existing friends, and apply search
-  const suggestions = allUsers.filter(user => 
-    user.id !== currentUser?.id && 
-    !friendsList.includes(user.id)
-  )
-  
-  const filteredSuggestions = suggestions.filter(user =>
-    user.full_name?.toLowerCase().includes(searchQuery.toLowerCase())
-  )
-
   const getButtonState = (userId: string) => {
     const status = requestStatuses[userId] || 'none'
-    
     switch (status) {
       case 'pending':
         return {
@@ -151,18 +109,12 @@ export default function FriendSuggestions({ searchQuery }: { searchQuery: string
     return (
       <div className="space-y-3">
         {[...Array(3)].map((_, i) => (
-          <div 
-            key={i} 
-            className="flex justify-between items-center p-4 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900"
-          >
+          <div key={i} className="flex justify-between items-center p-4 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900">
             <div className="flex items-center gap-4 w-full">
-              {/* Avatar Skeleton with wave animation */}
               <div className="relative overflow-hidden">
                 <Skeleton className="h-12 w-12 rounded-full bg-gray-200 dark:bg-gray-700" />
                 <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/50 dark:via-gray-800/50 to-transparent animate-wave" />
               </div>
-              
-              {/* Text Skeleton with wave animation */}
               <div className="flex-1 space-y-2">
                 <div className="relative overflow-hidden">
                   <Skeleton className="h-4 w-32 bg-gray-200 dark:bg-gray-700" />
@@ -173,8 +125,6 @@ export default function FriendSuggestions({ searchQuery }: { searchQuery: string
                   <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/50 dark:via-gray-800/50 to-transparent animate-wave" />
                 </div>
               </div>
-              
-              {/* Button Skeleton with wave animation */}
               <div className="relative overflow-hidden">
                 <Skeleton className="h-10 w-24 rounded-full bg-gray-200 dark:bg-gray-700" />
                 <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/50 dark:via-gray-800/50 to-transparent animate-wave" />
@@ -201,7 +151,6 @@ export default function FriendSuggestions({ searchQuery }: { searchQuery: string
       ) : (
         filteredSuggestions.map(user => {
           const buttonState = getButtonState(user.id)
-          
           return (
             <div
               key={user.id}
@@ -223,7 +172,6 @@ export default function FriendSuggestions({ searchQuery }: { searchQuery: string
                   </p>
                 </div>
               </div>
-              
               <Button
                 variant={buttonState.variant}
                 className={`rounded-full transition-all ${buttonState.className}`}

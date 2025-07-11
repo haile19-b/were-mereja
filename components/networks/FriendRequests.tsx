@@ -1,7 +1,6 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { createClient } from '@/utils/supabase/client'
 import { handleRequestResponse } from '@/lib/api/user/functions'
 import { Button } from '@/components/ui/button'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
@@ -9,67 +8,22 @@ import { Skeleton } from '@/components/ui/skeleton'
 import { Check, X, UserPlus } from 'lucide-react'
 import { ToastContainer, toast } from 'react-toastify'
 import 'react-toastify/dist/ReactToastify.css'
-
-interface Profile {
-  id: string
-  full_name: string
-  avatar_url: string
-  bio: string
-  title?: string
-  sender_id: string
-}
+import { User, useUserStore } from '@/lib/store/zustand'
 
 export default function FriendRequests({ searchQuery }: { searchQuery: string }) {
 
-  const supabase = createClient()
-  const [requests, setRequests] = useState<Profile[]>([])
+  const {requestSenders} = useUserStore();
+
+  const [requests, setRequests] = useState<User[]>([])
   const [isLoading, setIsLoading] = useState(true)
 
-  useEffect(() => {
-    const fetchFriendRequests = async () => {
-      try {
-        setIsLoading(true)
-        const { data: { user }, error: userError } = await supabase.auth.getUser()
-        if (userError || !user) throw userError || new Error('No user')
-
-        const { data: requestData, error: requestError } = await supabase
-          .from('friend_requests')
-          .select('sender_id')
-          .eq('receiver_id', user.id)
-          .eq('status', 'pending')
-
-        if (requestError || !requestData) throw requestError || new Error('No requests')
-
-        const senderIds = requestData.map(r => r.sender_id)
-
-        if (senderIds.length === 0) {
-          setRequests([])
-          return
-        }
-
-        const { data: profiles, error: profileError } = await supabase
-          .from('profiles')
-          .select('*')
-          .in('id', senderIds)
-
-        if (profileError) throw profileError
-
-        const enrichedProfiles = profiles.map(p => ({
-          ...p,
-          sender_id: p.id
-        }))
-
-        setRequests(enrichedProfiles)
-      } catch (err) {
-        console.error('Error fetching friend requests:', err)
-        toast.error('Failed to load friend requests.')
-      } finally {
-        setIsLoading(false)
-      }
+  useEffect(()=>{
+    const fetchData = async()=>{
+    await setRequests(requestSenders)
+    setIsLoading(false)
     }
-
-    fetchFriendRequests()
-  }, [])
+    fetchData();
+  },[])
 
   const handleResponse = async (senderId: string, accepted: boolean) => {
     try {
@@ -81,7 +35,7 @@ export default function FriendRequests({ searchQuery }: { searchQuery: string })
           position: "bottom-right",
           autoClose: 3000,
         })
-        setRequests(prev => prev.filter(r => r.sender_id !== senderId))
+        setRequests(prev => prev.filter(r => r.id !== senderId))
       } else {
         toast.error(response.error?.message || 'Failed to process request', {
           position: "bottom-right",
@@ -171,7 +125,7 @@ export default function FriendRequests({ searchQuery }: { searchQuery: string })
                 variant="outline"
                 size="icon"
                 className="h-9 w-9 rounded-full text-green-600 hover:text-green-700 hover:bg-green-50 dark:text-green-400 dark:hover:bg-green-900/30"
-                onClick={() => handleResponse(user.sender_id, true)}
+                onClick={() => handleResponse(user.id, true)}
               >
                 <Check className="h-4 w-4" />
                 <span className="sr-only">Accept request</span>
@@ -180,7 +134,7 @@ export default function FriendRequests({ searchQuery }: { searchQuery: string })
                 variant="outline"
                 size="icon"
                 className="h-9 w-9 rounded-full text-red-600 hover:text-red-700 hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-900/30"
-                onClick={() => handleResponse(user.sender_id, false)}
+                onClick={() => handleResponse(user.id, false)}
               >
                 <X className="h-4 w-4" />
                 <span className="sr-only">Decline request</span>

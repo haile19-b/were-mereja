@@ -1,11 +1,34 @@
 import { useEffect } from 'react';
 import { createClient } from "@/utils/supabase/client";
-import { useErrorStore, useUserStore } from "../store/zustand";
+import { useErrorStore, User, useUserStore } from "../store/zustand";
 
 export const useStarter = () => {
-    const { setUser, allUsers, setAllUsers, setMyFriends } = useUserStore();
+    const { user, setUser, allUsers, setAllUsers, setMyFriends, setRequestSenders } = useUserStore();
     const { setError } = useErrorStore();
     const supabase = createClient();
+
+    const fetchFriendRequests = async (userId: string, users: User[]) => {
+        try {
+            const { data: requestData, error: requestError } = await supabase
+                .from('friend_requests')
+                .select('sender_id')
+                .eq('receiver_id', userId)
+                .eq('status', 'pending');
+    
+            if (requestError) throw requestError;
+            
+            const senderIds = requestData?.map(r => r.sender_id) || [];
+            
+            const requestSenders = users.filter(u => senderIds.includes(u.id));
+            setRequestSenders(requestSenders);
+            
+            console.log("Processed request senders:", requestSenders);
+        } catch (err) {
+            const message = err instanceof Error ? err.message : 'Failed to fetch requests';
+            setError(message);
+            setRequestSenders([]);
+        }
+    };
 
     const initialize = async () => {
         console.log("Initialization started");
@@ -44,8 +67,6 @@ export const useStarter = () => {
             }
 
             setAllUsers(profiles);
-            console.log("this is all user:",profiles)
-
             // 4. Fetch friends
             const { data: friendIds, error: friendsError } = await supabase
                 .from('friends')
@@ -57,8 +78,10 @@ export const useStarter = () => {
             const friends = profiles.filter(profile => 
                 friendIds?.some(friend => friend.friend_id === profile.id)
             );
-
             setMyFriends(friends || []);
+
+            // 5. Fetch friend requests
+            await fetchFriendRequests(user.id, profiles); 
 
             return true;
         } catch (error) {
@@ -69,10 +92,10 @@ export const useStarter = () => {
         }
     };
 
-    // Optional: Add an effect to run automatically when hook is used
+    // Run initialization on mount
     useEffect(() => {
         initialize();
-    }, []); // Empty dependency array means runs once on mount
+    }, []);
 
     return { initialize };
 };
