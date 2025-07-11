@@ -1,50 +1,189 @@
 'use client'
 
+import { useEffect, useState } from 'react'
+import { createClient } from '@/utils/supabase/client'
+import { handleRequestResponse } from '@/lib/api/user/functions'
 import { Button } from '@/components/ui/button'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
-import { Check, X } from 'lucide-react'
+import { Skeleton } from '@/components/ui/skeleton'
+import { Check, X, UserPlus } from 'lucide-react'
+import { ToastContainer, toast } from 'react-toastify'
+import 'react-toastify/dist/ReactToastify.css'
 
-const requests = [
-  { id: 1, name: 'Michael Chan', avatar: '', title: 'Backend Engineer' },
-  { id: 2, name: 'Rachel Adams', avatar: '', title: 'Marketing Strategist' },
-]
+interface Profile {
+  id: string
+  full_name: string
+  avatar_url: string
+  bio: string
+  title?: string
+  sender_id: string
+}
 
 export default function FriendRequests({ searchQuery }: { searchQuery: string }) {
-  const filteredRequests = requests.filter(user => 
-    user.name.toLowerCase().includes(searchQuery.toLowerCase())
+
+  const supabase = createClient()
+  const [requests, setRequests] = useState<Profile[]>([])
+  const [isLoading, setIsLoading] = useState(true)
+
+  useEffect(() => {
+    const fetchFriendRequests = async () => {
+      try {
+        setIsLoading(true)
+        const { data: { user }, error: userError } = await supabase.auth.getUser()
+        if (userError || !user) throw userError || new Error('No user')
+
+        const { data: requestData, error: requestError } = await supabase
+          .from('friend_requests')
+          .select('sender_id')
+          .eq('receiver_id', user.id)
+          .eq('status', 'pending')
+
+        if (requestError || !requestData) throw requestError || new Error('No requests')
+
+        const senderIds = requestData.map(r => r.sender_id)
+
+        if (senderIds.length === 0) {
+          setRequests([])
+          return
+        }
+
+        const { data: profiles, error: profileError } = await supabase
+          .from('profiles')
+          .select('*')
+          .in('id', senderIds)
+
+        if (profileError) throw profileError
+
+        const enrichedProfiles = profiles.map(p => ({
+          ...p,
+          sender_id: p.id
+        }))
+
+        setRequests(enrichedProfiles)
+      } catch (err) {
+        console.error('Error fetching friend requests:', err)
+        toast.error('Failed to load friend requests.')
+      } finally {
+        setIsLoading(false)
+      }
+    }
+
+    fetchFriendRequests()
+  }, [])
+
+  const handleResponse = async (senderId: string, accepted: boolean) => {
+    try {
+      const response = await handleRequestResponse(senderId, accepted)
+      console.log('Response:', response) // Debug log
+      
+      if (response.success) {
+        toast.success(accepted ? 'Friend request accepted!' : 'Friend request declined', {
+          position: "bottom-right",
+          autoClose: 3000,
+        })
+        setRequests(prev => prev.filter(r => r.sender_id !== senderId))
+      } else {
+        toast.error(response.error?.message || 'Failed to process request', {
+          position: "bottom-right",
+          autoClose: 3000,
+        })
+      }
+    } catch (error) {
+      console.error('Error in handleResponse:', error)
+      toast.error('An unexpected error occurred', {
+        position: "bottom-right",
+        autoClose: 3000,
+      })
+    }
+  }
+  
+
+  const filteredRequests = requests.filter(user =>
+    user.full_name?.toLowerCase().includes(searchQuery.toLowerCase())
   )
 
   return (
     <div className="space-y-4">
-      {filteredRequests.length === 0 ? (
-        <p className="text-center text-gray-500 py-8">No matching requests found</p>
+        <ToastContainer position="bottom-right" autoClose={3000} />
+      {isLoading ? (
+        <div className="space-y-3">
+          {[...Array(3)].map((_, i) => (
+            <div
+              key={i}
+              className="flex justify-between items-center p-4 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900"
+            >
+              <div className="flex items-center gap-4 w-full">
+                <div className="relative overflow-hidden">
+                  <Skeleton className="h-12 w-12 rounded-full bg-gray-200 dark:bg-gray-700" />
+                  <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/50 dark:via-gray-800/50 to-transparent animate-wave" />
+                </div>
+
+                <div className="flex-1 space-y-2">
+                  <div className="relative overflow-hidden">
+                    <Skeleton className="h-4 w-32 bg-gray-200 dark:bg-gray-700" />
+                    <div className="absolute inset-0 animate-wave bg-gradient-to-r from-transparent via-white/50 dark:via-gray-800/50 to-transparent" />
+                  </div>
+                  <div className="relative overflow-hidden">
+                    <Skeleton className="h-3 w-24 bg-gray-200 dark:bg-gray-700" />
+                    <div className="absolute inset-0 animate-wave bg-gradient-to-r from-transparent via-white/50 dark:via-gray-800/50 to-transparent" />
+                  </div>
+                </div>
+
+                <div className="relative overflow-hidden">
+                  <Skeleton className="h-9 w-20 rounded-full bg-gray-200 dark:bg-gray-700" />
+                  <div className="absolute inset-0 animate-wave bg-gradient-to-r from-transparent via-white/50 dark:via-gray-800/50 to-transparent" />
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      ) : filteredRequests.length === 0 ? (
+        <div className="text-center py-8">
+          <div className="mx-auto w-16 h-16 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center mb-4">
+            <UserPlus className="w-6 h-6 text-gray-400" />
+          </div>
+          <p className="text-gray-600 dark:text-gray-300 font-medium">No pending requests</p>
+          <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+            {searchQuery ? 'Try a different search' : 'No one has requested to connect yet'}
+          </p>
+        </div>
       ) : (
         filteredRequests.map(user => (
-          <div key={user.id} className="flex justify-between items-center p-4 hover:bg-gray-50 dark:hover:bg-gray-800 rounded-lg transition-colors">
+          <div
+            key={user.id}
+            className="flex justify-between items-center p-4 hover:bg-gray-50 dark:hover:bg-gray-800 rounded-xl transition-colors border border-gray-100 dark:border-gray-800"
+          >
             <div className="flex items-center gap-4">
               <Avatar className="h-12 w-12 border-2 border-white dark:border-gray-700 shadow-sm">
-                <AvatarImage src={user.avatar || `https://i.pravatar.cc/150?img=${user.id + 10}`} />
+                <AvatarImage src={user.avatar_url || `https://i.pravatar.cc/150?img=${user.id}`} />
                 <AvatarFallback className="bg-gradient-to-r from-blue-500 to-cyan-500 text-white">
-                  {user.name.charAt(0)}
+                  {user.full_name?.charAt(0) || 'U'}
                 </AvatarFallback>
               </Avatar>
               <div>
-                <p className="font-medium text-gray-800 dark:text-gray-100">{user.name}</p>
-                <p className="text-sm text-gray-500 dark:text-gray-400">{user.title}</p>
+                <p className="font-medium text-gray-800 dark:text-gray-100">{user.full_name || 'Unknown User'}</p>
+                <p className="text-sm text-gray-500 dark:text-gray-400">{user.bio || 'No bio available'}</p>
               </div>
             </div>
+
             <div className="flex gap-2">
-              <Button 
-                size="sm" 
-                className="h-9 w-9 p-0 bg-green-50 hover:bg-green-100 dark:bg-green-900/30 dark:hover:bg-green-900/50 text-green-600 dark:text-green-400 border border-green-200 dark:border-green-800 rounded-full"
+              <Button
+                variant="outline"
+                size="icon"
+                className="h-9 w-9 rounded-full text-green-600 hover:text-green-700 hover:bg-green-50 dark:text-green-400 dark:hover:bg-green-900/30"
+                onClick={() => handleResponse(user.sender_id, true)}
               >
                 <Check className="h-4 w-4" />
+                <span className="sr-only">Accept request</span>
               </Button>
-              <Button 
-                size="sm" 
-                className="h-9 w-9 p-0 bg-red-50 hover:bg-red-100 dark:bg-red-900/30 dark:hover:bg-red-900/50 text-red-600 dark:text-red-400 border border-red-200 dark:border-red-800 rounded-full"
+              <Button
+                variant="outline"
+                size="icon"
+                className="h-9 w-9 rounded-full text-red-600 hover:text-red-700 hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-900/30"
+                onClick={() => handleResponse(user.sender_id, false)}
               >
                 <X className="h-4 w-4" />
+                <span className="sr-only">Decline request</span>
               </Button>
             </div>
           </div>
