@@ -2,19 +2,36 @@
 
 import ChatSidebar from '@/components/chat/ChatSidebar'
 import ChatWindow from '@/components/chat/ChatWindow'
+import { useErrorStore, useMessageStore, User, useUserStore } from '@/lib/store/zustand'
+import { createClient } from '@/utils/supabase/client'
 import { useEffect, useState } from 'react'
 
-const dummyUsers = [
-  { id: 1, name: 'Sarah Johnson', avatar: '', lastMessage: 'Let’s catch up later.' },
-  { id: 2, name: 'David Kim', avatar: '', lastMessage: 'Got the file, thanks!' },
-  { id: 3, name: 'Olivia Lee', avatar: '', lastMessage: 'See you at 5!' },
-]
-
 export default function MessagePage() {
-  const [selectedUserId, setSelectedUserId] = useState<number | null>(null)
+  const [selectedUserId, setSelectedUserId] = useState<string | null>(null)
   const [isMobile, setIsMobile] = useState(false)
+  const {myFriends} = useUserStore();
+  const [chatUsers,setChatUsers] = useState<User[]>([])
+  const selectedUser = chatUsers?.find(user => user.id === selectedUserId)
+  const {setMessages} = useMessageStore();
+  const {setError} = useErrorStore();
 
-  const selectedUser = dummyUsers.find(user => user.id === selectedUserId)
+  const supabase = createClient();
+
+  const fetchMessages = async(senderId:string)=>{
+    try {
+      const {data:messages,error} = await supabase.from('messages').select('*').eq('sender_id',senderId)
+
+      if(error){
+        setError(error)
+        return
+      }
+      setMessages(messages)
+      console.log("this is messages:",messages)
+      return
+    } catch (error) {
+      setError(error)
+    }
+  }
 
   useEffect(() => {
     const checkScreenSize = () => {
@@ -26,6 +43,15 @@ export default function MessagePage() {
     return () => window.removeEventListener('resize', checkScreenSize)
   }, [])
 
+  useEffect(()=>{
+    setChatUsers(myFriends)
+  },[myFriends])
+
+  const onSelectUser = async(id:string)=>{
+    setSelectedUserId(id);
+    fetchMessages(id);
+  }
+
   const handleBack = () => setSelectedUserId(null)
 
   return (
@@ -36,9 +62,9 @@ export default function MessagePage() {
             <h2 className="text-xl font-bold text-gray-800 dark:text-white">Messages</h2>
           </div>
           <ChatSidebar 
-            users={dummyUsers} 
+            users={chatUsers} 
             selectedUserId={selectedUserId} 
-            onSelectUser={setSelectedUserId} 
+            onSelectUser={onSelectUser} 
           />
         </div>
       )}
@@ -47,7 +73,8 @@ export default function MessagePage() {
         <div className="flex-1 flex flex-col">
           {selectedUserId ? (
             <ChatWindow 
-              user={selectedUser!} 
+              selectedUserId={selectedUserId}
+              ChatWithUser={selectedUser!} 
               onBack={isMobile ? handleBack : undefined} 
             />
           ) : (

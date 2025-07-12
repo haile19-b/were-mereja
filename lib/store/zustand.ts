@@ -1,7 +1,6 @@
 'use client'
 
 import { create } from 'zustand'
-import { fetchAllUsers } from '../api/user/functions';
 
 // Define User interface
 export interface User {
@@ -42,7 +41,6 @@ interface UserStore {
   setAllUsers: (users: User[]) => void;
   myFriends: User[];
   setMyFriends:(friends:User[]) => void;
-  fetchUsers: () => Promise<void>;
   requestSenders:User[];
   setRequestSenders:(requests:User[])=>void;
 }
@@ -65,17 +63,28 @@ export const useUserStore = create<UserStore>((set) => ({
   setMyFriends:(friends:User[])=>set({myFriends:friends}),
   requestSenders:[],
   setRequestSenders:(requests:User[])=>set({requestSenders:requests}),
+}))
 
-  fetchUsers: async () => {
-    try {
-      const result = await fetchAllUsers()
-      if (!result || !result.success) {
-        useErrorStore.getState().setError(result?.error || 'Failed to fetch users')
-      } else {
-        set({ allUsers: result.data })
-      }
-    } catch (err) {
-      useErrorStore.getState().setError(err)
-    }
-  },
+export interface Message {
+  id:string;
+  sender_id:string;
+  receiver_id:string;
+  content:string;
+  created_at:string;
+  seen:boolean;
+}
+
+interface MessageStore{
+  messages:Message[];
+  setMessages:(message:Message[])=>void;
+  addMessage: (message: Message) => void;
+}
+
+export const useMessageStore = create<MessageStore>((set)=>({
+  messages:[],
+  setMessages:(message:Message[])=>set({messages:message}),
+  addMessage: (message:Message) => 
+    set((state) => ({ 
+      messages: [...state.messages, message] 
+    })),
 }))

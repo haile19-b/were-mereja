@@ -2,23 +2,6 @@ import { createClient } from "@/utils/supabase/client";
 
 const supabase = createClient();
 
-export const fetchAllUsers = async()=>{
-    try {
-        const {data, error} = await supabase.from('profiles').select('*')
-        if(error){
-            return {error:error,success:false}
-        }
-
-        console.log(data)
-
-        return {data:data,success:true};
-
-    } catch (error) {
-        return {error:error,success:false}
-    }
-}
-
-
 export const sendFriendRequest = async (receiver_id: string, sender_id: string) => {
     try {
       const { data, error } = await supabase
@@ -94,52 +77,3 @@ export const sendFriendRequest = async (receiver_id: string, sender_id: string) 
       }
     }
   }
-
-
-interface FriendProfile {
-  id: string
-  full_name: string | null
-  avatar_url: string | null
-  headline: string | null
-}
-
-interface Friend {
-  id: string
-  name: string
-  avatar_url: string
-  title: string
-}
-
-export const fetchFriends = async (userId: string): Promise<Friend[]> => {
-  const supabase = createClient()
-  
-  try {
-    // Get friends where user is either user_id or friend_id
-    const { data: friendsData, error } = await supabase
-      .from('friends')
-      .select(`
-        friend:profiles!friends_friend_id_fkey(id, full_name, avatar_url, headline)
-      `)
-      .eq('user_id', userId)
-
-    if (error) throw error
-
-    // Type guard to ensure data is properly shaped
-    if (!friendsData || !Array.isArray(friendsData)) {
-      return []
-    }
-
-    return friendsData.map((f) => {
-      const friend = Array.isArray(f.friend) ? f.friend[0] : f.friend
-      return {
-        id: friend?.id || '',
-        name: friend?.full_name || 'Unknown User',
-        avatar_url: friend?.avatar_url || '',
-        title: friend?.headline || 'No title'
-      }
-    })
-  } catch (error) {
-    console.error('Error fetching friends:', error)
-    return []
-  }
-}
