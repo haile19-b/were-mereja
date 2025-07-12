@@ -82,7 +82,7 @@ export default function ChatWindow({ ChatWithUser, onBack, selectedUserId }: Cha
     return () => {
       supabase.removeChannel(channel)
     }
-  }, [selectedUserId, user?.id])
+  }, [selectedUserId, user?.id,handleSend])
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
