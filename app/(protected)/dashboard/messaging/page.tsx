@@ -9,25 +9,27 @@ import { useEffect, useState } from 'react'
 export default function MessagePage() {
   const [selectedUserId, setSelectedUserId] = useState<string | null>(null)
   const [isMobile, setIsMobile] = useState(false)
-  const {myFriends} = useUserStore();
-  const [chatUsers,setChatUsers] = useState<User[]>([])
+  const { myFriends } = useUserStore()
+  const [chatUsers, setChatUsers] = useState<User[]>([])
   const selectedUser = chatUsers?.find(user => user.id === selectedUserId)
-  const {setMessages} = useMessageStore();
-  const {setError} = useErrorStore();
+  const { setMessages } = useMessageStore()
+  const { setError } = useErrorStore()
 
-  const supabase = createClient();
+  const supabase = createClient()
 
-  const fetchMessages = async(senderId:string)=>{
+  const fetchMessages = async (senderId: string) => {
     try {
-      const {data:messages,error} = await supabase.from('messages').select('*').eq('sender_id',senderId)
+      const { data: messages, error } = await supabase
+        .from('messages')
+        .select('*')
+        .eq('sender_id', senderId)
 
-      if(error){
+      if (error) {
         setError(error)
         return
       }
+
       setMessages(messages)
-      console.log("this is messages:",messages)
-      return
     } catch (error) {
       setError(error)
     }
@@ -43,28 +45,28 @@ export default function MessagePage() {
     return () => window.removeEventListener('resize', checkScreenSize)
   }, [])
 
-  useEffect(()=>{
+  useEffect(() => {
     setChatUsers(myFriends)
-  },[myFriends])
+  }, [myFriends])
 
-  const onSelectUser = async(id:string)=>{
-    setSelectedUserId(id);
-    fetchMessages(id);
+  const onSelectUser = async (id: string) => {
+    setSelectedUserId(id)
+    fetchMessages(id)
   }
 
   const handleBack = () => setSelectedUserId(null)
 
   return (
-    <div className="flex h-[calc(100vh-80px)] max-w-6xl mx-auto border-0 rounded-xl overflow-hidden shadow-lg bg-gradient-to-br from-white to-gray-50 dark:from-gray-900 dark:to-gray-800">
+    <div className="flex flex-col sm:flex-row h-[calc(100vh-80px)] w-full sm:max-w-6xl mx-auto border-0 rounded-xl overflow-hidden shadow-lg bg-gradient-to-br from-white to-gray-50 dark:from-gray-900 dark:to-gray-800">
       {(!isMobile || (isMobile && !selectedUserId)) && (
         <div className="w-full sm:w-1/3 lg:w-1/4 border-r border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900">
           <div className="p-4 border-b border-gray-200 dark:border-gray-700">
             <h2 className="text-xl font-bold text-gray-800 dark:text-white">Messages</h2>
           </div>
-          <ChatSidebar 
-            users={chatUsers} 
-            selectedUserId={selectedUserId} 
-            onSelectUser={onSelectUser} 
+          <ChatSidebar
+            users={chatUsers}
+            selectedUserId={selectedUserId}
+            onSelectUser={onSelectUser}
           />
         </div>
       )}
@@ -72,10 +74,10 @@ export default function MessagePage() {
       {(!isMobile || (isMobile && selectedUserId)) && (
         <div className="flex-1 flex flex-col">
           {selectedUserId ? (
-            <ChatWindow 
+            <ChatWindow
               selectedUserId={selectedUserId}
-              ChatWithUser={selectedUser!} 
-              onBack={isMobile ? handleBack : undefined} 
+              ChatWithUser={selectedUser!}
+              onBack={isMobile ? handleBack : undefined}
             />
           ) : (
             <div className="hidden sm:flex flex-col items-center justify-center h-full text-gray-500 dark:text-gray-400 p-6 text-center">
