@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar'
 import { Button } from '@/components/ui/button'
 import { Send, Paperclip, Smile } from 'lucide-react'
@@ -8,9 +8,9 @@ import { Message, useErrorStore, useMessageStore, User, useUserStore } from '@/l
 import { createClient } from '@/utils/supabase/client'
 
 interface ChatWindowProps {
-  selectedUserId: string;
-  ChatWithUser: User;
-  onBack?: () => void;
+  selectedUserId: string
+  ChatWithUser: User
+  onBack?: () => void
 }
 
 export default function ChatWindow({ ChatWithUser, onBack, selectedUserId }: ChatWindowProps) {
@@ -19,6 +19,8 @@ export default function ChatWindow({ ChatWithUser, onBack, selectedUserId }: Cha
   const { user } = useUserStore()
   const [newMessage, setNewMessage] = useState('')
   const supabase = createClient()
+  const bottomRef = useRef<HTMLDivElement>(null)
+  const messagesEndRef = useRef<HTMLDivElement>(null)
 
   const handleSend = async () => {
     if (!newMessage.trim() || !user?.id) return
@@ -40,7 +42,6 @@ export default function ChatWindow({ ChatWithUser, onBack, selectedUserId }: Cha
       }
     } catch (error) {
       setError(error instanceof Error ? error.message : 'Failed to send message')
-      console.error('Error sending message:', error)
     }
   }
 
@@ -83,20 +84,23 @@ export default function ChatWindow({ ChatWithUser, onBack, selectedUserId }: Cha
     }
   }, [selectedUserId, user?.id])
 
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
+  }, [messages])
+
   const formatTime = (dateString: string) => {
     const date = new Date(dateString)
     return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
   }
 
   return (
-    <div className="flex flex-col h-full">
-      {/* Header */}
-      <div className="flex items-center gap-3 border-b border-gray-200 dark:border-gray-700 px-4 py-3 bg-white dark:bg-gray-800">
+    <div className="flex flex-col h-[100dvh] w-full">
+      {/* Header - Fixed height */}
+      <div className="flex items-center gap-3 border-b border-gray-200 dark:border-gray-700 px-4 py-3 bg-white dark:bg-gray-800 h-16 shrink-0">
         {onBack && (
           <button
             onClick={onBack}
             className="sm:hidden text-purple-600 dark:text-purple-300 font-medium px-1 mr-1"
-            aria-label="Back to conversations"
           >
             ←
           </button>
@@ -107,7 +111,7 @@ export default function ChatWindow({ ChatWithUser, onBack, selectedUserId }: Cha
             alt={ChatWithUser.full_name}
           />
           <AvatarFallback className="bg-gradient-to-r from-purple-500 to-pink-500 text-white text-sm">
-            {ChatWithUser.full_name.split(" ")[0].charAt(0)}
+            {ChatWithUser.full_name.charAt(0)}
           </AvatarFallback>
         </Avatar>
         <div className="flex-1 min-w-0">
@@ -121,8 +125,8 @@ export default function ChatWindow({ ChatWithUser, onBack, selectedUserId }: Cha
         </div>
       </div>
 
-      {/* Messages */}
-      <div className="flex-1 overflow-y-auto p-3 sm:p-4 space-y-3 bg-gradient-to-b from-white to-gray-50 dark:from-gray-900 dark:to-gray-800">
+      {/* Messages - Flexible height with min-height */}
+      <div className="flex-1 overflow-y-auto p-3 sm:p-4 space-y-3 bg-gradient-to-b from-white to-gray-50 dark:from-gray-900 dark:to-gray-800 min-h-0">
         {messages.length === 0 ? (
           <div className="flex items-center justify-center h-full px-4">
             <p className="text-gray-500 dark:text-gray-400 text-sm sm:text-base text-center">
@@ -158,15 +162,15 @@ export default function ChatWindow({ ChatWithUser, onBack, selectedUserId }: Cha
             </div>
           ))
         )}
+        <div ref={messagesEndRef} />
       </div>
 
-      {/* Input Area */}
-      <div className="flex items-center gap-1 sm:gap-2 border-t border-gray-200 dark:border-gray-700 p-2 sm:p-3 bg-white dark:bg-gray-800">
+      {/* Input - Fixed height */}
+      <div className="shrink-0 flex items-center gap-1 sm:gap-2 border-t border-gray-200 dark:border-gray-700 p-2 sm:p-3 bg-white dark:bg-gray-800 h-16">
         <Button
           variant="ghost"
           size="icon"
           className="h-8 w-8 text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-700"
-          aria-label="Attach file"
         >
           <Paperclip className="w-4 h-4 sm:w-5 sm:h-5" />
         </Button>
@@ -174,7 +178,6 @@ export default function ChatWindow({ ChatWithUser, onBack, selectedUserId }: Cha
           variant="ghost"
           size="icon"
           className="h-8 w-8 text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-700"
-          aria-label="Add emoji"
         >
           <Smile className="w-4 h-4 sm:w-5 sm:h-5" />
         </Button>
@@ -184,13 +187,11 @@ export default function ChatWindow({ ChatWithUser, onBack, selectedUserId }: Cha
           value={newMessage}
           onChange={(e) => setNewMessage(e.target.value)}
           onKeyDown={(e) => { if (e.key === 'Enter') handleSend() }}
-          aria-label="Message input"
         />
         <Button
           onClick={handleSend}
           className="h-8 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white rounded-full px-3 sm:px-4 text-xs sm:text-sm"
           disabled={!newMessage.trim()}
-          aria-label="Send message"
         >
           <Send className="w-3 h-3 sm:w-4 sm:h-4 mr-1" />
           <span className="hidden sm:inline">Send</span>
