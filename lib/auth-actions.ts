@@ -72,7 +72,7 @@ export async function signInWithGoogle() {
   const { data, error } = await supabase.auth.signInWithOAuth({
     provider: "google",
     options: {
-      redirectTo: "http://localhost:3000/auth/callback", // after success fully login , redirects to this page 
+      redirectTo: "https://were-mereja-p9ve.vercel.app/auth/callback", // after success fully login , redirects to this page 
       queryParams: {
         access_type: "offline",
         prompt: "consent",
