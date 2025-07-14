@@ -54,7 +54,7 @@ function NavBar() {
   }
 
   const navItems = [
-    { name: 'Home', path: '/dashboard', icon: <Home className="w-5 h-5" /> },
+    { name: 'Home', path: '/', icon: <Home className="w-5 h-5" /> },//for now 
     { name: 'My Network', path: '/dashboard/network', icon: <Users className="w-5 h-5" /> },
     { name: 'Messaging', path: '/dashboard/messaging', icon: <MessageSquare className="w-5 h-5" /> },
     { name: 'Notifications', path: '/dashboard/notifications', icon: <Bell className="w-5 h-5" /> },
