@@ -6,6 +6,7 @@ import { MessageCircle } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
 import { User, useUserStore } from '@/lib/store/zustand'
+import Link from 'next/link'
 
 interface Friend {
   id: string
@@ -100,6 +101,7 @@ export default function MyFriends({ searchQuery }: { searchQuery: string }) {
                 </p>
               </div>
             </div>
+            <Link href='/dashboard/messaging'>
             <Button
               variant="outline"
               className="rounded-full bg-indigo-50 hover:bg-indigo-100 dark:bg-indigo-900/30 dark:hover:bg-indigo-900/50 text-indigo-600 dark:text-indigo-400 border border-indigo-200 dark:border-indigo-800"
@@ -107,6 +109,7 @@ export default function MyFriends({ searchQuery }: { searchQuery: string }) {
               <MessageCircle className="h-4 w-4 mr-2" />
               Message
             </Button>
+            </Link>
           </div>
         ))
       )}
